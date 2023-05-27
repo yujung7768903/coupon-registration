@@ -25,8 +25,6 @@ public class Coupon {
 
     private Integer discount;
 
-    private String email;
-
     private CouponScope scope;
 
     private LocalDate expirationStartDate;
@@ -40,7 +38,6 @@ public class Coupon {
     public Coupon(
             String code,
             Integer discount,
-            String email,
             CouponScope scope,
             LocalDate expirationStartDate,
             LocalDate expirationEndDate,
@@ -48,7 +45,6 @@ public class Coupon {
     ) {
         this.code = code;
         this.discount = discount;
-        this.email = email;
         this.scope = scope;
         this.expirationStartDate = expirationStartDate;
         this.expirationEndDate = expirationEndDate;
