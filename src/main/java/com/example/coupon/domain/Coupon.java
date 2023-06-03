@@ -9,7 +9,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Getter
 @AllArgsConstructor
@@ -27,9 +27,9 @@ public class Coupon {
 
     private CouponScope scope;
 
-    private LocalDate expirationStartDate;
+    private LocalDateTime expirationStartDate;
 
-    private LocalDate expirationEndDate;
+    private LocalDateTime expirationEndDate;
 
     private String description;
 
@@ -39,8 +39,8 @@ public class Coupon {
             String code,
             Integer discount,
             CouponScope scope,
-            LocalDate expirationStartDate,
-            LocalDate expirationEndDate,
+            LocalDateTime expirationStartDate,
+            LocalDateTime expirationEndDate,
             String description
     ) {
         this.code = code;
