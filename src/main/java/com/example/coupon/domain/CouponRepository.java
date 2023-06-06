@@ -10,4 +10,6 @@ public interface CouponRepository extends JpaRepository<Coupon, Long> {
 
     public Long countByCodeIn(List<String> codeList);
 
+    public List<Coupon> findByCodeIn(List<String> codeList);
+
 }

@@ -1,6 +1,7 @@
 package com.example.coupon.service;
 
 import com.example.coupon.domain.CouponRepository;
+import com.example.coupon.dto.CouponDeleteRequestDto;
 import com.example.coupon.dto.CouponSaveRequestDto;
 import com.opencsv.CSVReader;
 import com.opencsv.exceptions.CsvException;
@@ -32,6 +33,22 @@ public class CouponService {
                 checkDuplicateCoupon(codeList);
                 codeList.forEach(c -> couponRepository.save(requestDto.toCoupon(c)));
                 return codeList;
+            } catch (CsvException e) {
+                throw new RuntimeException(e);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Transactional
+    public void deleteCoupon(CouponDeleteRequestDto requestDto) {
+        try(InputStreamReader inputStreamReader = new InputStreamReader(requestDto.getCsvFile().getInputStream())) {
+            try (CSVReader csvReader = new CSVReader(inputStreamReader)) {
+                List<String> codeList = csvReader.readAll().stream()
+                        .map(arr -> arr[0])
+                        .collect(Collectors.toList());
+                couponRepository.deleteAllInBatch(couponRepository.findByCodeIn(codeList));
             } catch (CsvException e) {
                 throw new RuntimeException(e);
             }
