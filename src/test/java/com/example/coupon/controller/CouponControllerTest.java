@@ -1,5 +1,6 @@
 package com.example.coupon.controller;
 
+import com.example.coupon.dto.CouponSaveRequestDto;
 import com.example.coupon.service.CouponService;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
@@ -10,11 +11,10 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
 
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.util.ArrayList;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -34,36 +34,30 @@ public class CouponControllerTest {
     private CouponService couponService;
 
     @Test
-    public void registerCouponTest() {
+    public void registerCouponTest() throws Exception {
         // given
-        given(couponService.registerCoupon(any())).willReturn(new ArrayList<>());
+        given(couponService.registerCoupon(any(CouponSaveRequestDto.class))).willReturn(new ArrayList<>());
         String fileName = "일괄등록_쿠폰_1000개.csv";
         String path = "src/test/resources/" + fileName;
+        MockMultipartFile multipartFile = new MockMultipartFile(fileName, new FileInputStream(path));
 
-        try {
-            MockMultipartFile multipartFile = new MockMultipartFile(fileName, new FileInputStream(path));
+        // when
+        ResultActions resultActions = mockMvc.perform(multipart("/coupon")
+                .file(multipartFile)
+                .param("discount", "50")
+                .param("scope", "ALL")
+                .param("description", "전품목 50% 할인 쿠폰")
+                .param("expirationStartDate", "2023-05-27T00:00:00")
+                .param("expirationEndDate", "2023-06-27T00:00:00")
+        );
 
-            // when
-            ResultActions resultActions = mockMvc.perform(multipart("/coupon")
-                    .file(multipartFile)
-                    .param("discount", "50")
-                    .param("scope", "ALL")
-                    .param("description", "전품목 50% 할인 쿠폰")
-                    .param("expirationStartDate", "2023-05-27T00:00:00")
-                    .param("expirationEndDate", "2023-06-27T00:00:00")
-            );
 
-            // then
-            resultActions.andExpect(status().isCreated());
-        } catch (FileNotFoundException e) {
-            log.info("파일을 찾을 수 없습니다.");
-        } catch (IOException e) {
-            log.info("MultipartFile 생성 중 문제가 발생했습니다.");
-        } catch (SecurityException e) {
-            log.info("파일에 대한 읽기 권한이 없습니다.");
-        } catch (Exception e) {
-            log.info("Controller 테스트 중 문제가 발생했습니다.");
-        }
+        // then
+        MvcResult mvcResult = resultActions
+                .andExpect(status().isCreated())
+                .andReturn();
+
+        log.info(mvcResult.getResponse().getContentAsString());
     }
 
 }
