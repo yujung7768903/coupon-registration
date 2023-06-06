@@ -1,8 +1,11 @@
 package com.example.coupon.dto;
 
+import com.example.coupon.domain.Coupon;
 import com.example.coupon.domain.CouponScope;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -29,5 +32,16 @@ public class CouponSaveRequestDto {
     private LocalDateTime expirationEndDate;
 
     private String description;
+
+    public Coupon toCoupon(String code) {
+        return Coupon.builder()
+                .code(code)
+                .discount(discount)
+                .scope(scope)
+                .expirationStartDate(expirationStartDate)
+                .expirationEndDate(expirationEndDate)
+                .description(description)
+                .build();
+    }
 
 }
