@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
+import java.util.List;
 
 @RequiredArgsConstructor
 @RestController
@@ -22,14 +23,13 @@ public class CouponController {
     private final CouponService couponService;
 
     @PostMapping(value = "", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
-    public ResponseEntity<Object> registerCoupon(@Valid @ModelAttribute CouponSaveRequestDto requestDto) {
-        try {
-            return ResponseEntity.status(201).body(couponService.registerCoupon(requestDto));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(400).body(e.getMessage());
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(500).body(e.getMessage());
-        }
+    public ResponseEntity<List<String>> registerCoupon(@Valid @ModelAttribute CouponSaveRequestDto requestDto) {
+        return ResponseEntity.status(201).body(couponService.registerCoupon(requestDto));
+    }
+
+    @PostMapping(value = "/bulk", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
+    public ResponseEntity<List<String>> bulkRegisterCoupon(@Valid @ModelAttribute CouponSaveRequestDto requestDto) {
+        return ResponseEntity.status(201).body(couponService.bulkRegisterCoupon(requestDto));
     }
 
     @DeleteMapping(value = "", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})

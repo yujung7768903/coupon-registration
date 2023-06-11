@@ -1,6 +1,8 @@
 package com.example.coupon.service;
 
+import com.example.coupon.domain.Coupon;
 import com.example.coupon.domain.CouponRepository;
+import com.example.coupon.domain.CouponRepositoryCustom;
 import com.example.coupon.dto.CouponDeleteRequestDto;
 import com.example.coupon.dto.CouponSaveRequestDto;
 import com.opencsv.CSVReader;
@@ -12,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -22,6 +25,7 @@ import java.util.stream.Collectors;
 public class CouponService {
 
     private final CouponRepository couponRepository;
+    private final CouponRepositoryCustom couponRepositoryCustom;
 
     @Transactional
     public List<String> registerCoupon(CouponSaveRequestDto requestDto) {
@@ -32,6 +36,28 @@ public class CouponService {
                         .collect(Collectors.toList());
                 checkDuplicateCoupon(codeList);
                 codeList.forEach(c -> couponRepository.save(requestDto.toCoupon(c)));
+                return codeList;
+            } catch (CsvException e) {
+                throw new RuntimeException(e);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Transactional
+    public List<String> bulkRegisterCoupon(CouponSaveRequestDto requestDto) {
+        try(InputStreamReader inputStreamReader = new InputStreamReader(requestDto.getCsvFile().getInputStream())) {
+            try (CSVReader csvReader = new CSVReader(inputStreamReader)) {
+                List<String> codeList = new ArrayList<>();
+                List<Coupon> couponList = new ArrayList<>();
+                csvReader.readAll().stream()
+                        .forEach(row -> {
+                            codeList.add(row[0]);
+                            couponList.add(requestDto.toCoupon(row[0]));
+                        });
+                checkDuplicateCoupon(codeList);
+                couponRepositoryCustom.saveAll(couponList);
                 return codeList;
             } catch (CsvException e) {
                 throw new RuntimeException(e);
