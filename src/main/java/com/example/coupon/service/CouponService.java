@@ -5,10 +5,12 @@ import com.example.coupon.domain.CouponRepository;
 import com.example.coupon.domain.CouponRepositoryCustom;
 import com.example.coupon.dto.CouponDeleteRequestDto;
 import com.example.coupon.dto.CouponSaveRequestDto;
+import com.google.common.collect.Lists;
 import com.opencsv.CSVReader;
 import com.opencsv.exceptions.CsvException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,6 +28,9 @@ public class CouponService {
 
     private final CouponRepository couponRepository;
     private final CouponRepositoryCustom couponRepositoryCustom;
+
+    @Value("${coupon.batch_size}")
+    private int batchSize;
 
     @Transactional
     public List<String> registerCoupon(CouponSaveRequestDto requestDto) {
@@ -57,7 +62,8 @@ public class CouponService {
                             couponList.add(requestDto.toCoupon(row[0]));
                         });
                 checkDuplicateCoupon(codeList);
-                couponRepositoryCustom.saveAll(couponList);
+                Lists.partition(couponList, batchSize)
+                        .forEach(p -> couponRepositoryCustom.saveAll(p));
                 return codeList;
             } catch (CsvException e) {
                 throw new RuntimeException(e);
@@ -74,7 +80,8 @@ public class CouponService {
                 List<String> codeList = csvReader.readAll().stream()
                         .map(arr -> arr[0])
                         .collect(Collectors.toList());
-                couponRepository.deleteAllInBatch(couponRepository.findByCodeIn(codeList));
+                Lists.partition(codeList, batchSize)
+                                .forEach(p -> couponRepository.deleteAllInBatch(couponRepository.findByCodeIn(p)));
             } catch (CsvException e) {
                 throw new RuntimeException(e);
             }
